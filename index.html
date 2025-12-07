@@ -27,121 +27,232 @@ body { margin:0; font-family:Arial,sans-serif; display:flex; flex-direction:colu
 </div>
 
 <script>
-let memory=[]; 
+let memory=[];
 let lastTopics=[];
 
-// Topik & keyword
+// Daftar topik & keyword
 const topics={
- school:["school","homework","class","teacher","study","lesson"],
- game:["game","play","gamer","gaming","console","pc","video game"],
- tired:["tired","sleepy","exhausted","fatigue","nap","sleep"],
- sad:["sad","down","unhappy","depressed","lonely","gloomy"],
- math:["math","calculate","problem","equation","number","sum","subtract","multiply","divide"],
- music:["music","song","band","instrument","melody","piano","guitar","singing"],
- movie:["movie","film","cinema","watch","series","episode","tv show"],
- food:["food","eat","hungry","meal","recipe","drink","snack"],
- travel:["travel","trip","holiday","vacation","tour","flight","journey"],
- coding:["code","program","script","python","javascript","html","java","project","algorithm"],
- sport:["sport","soccer","basketball","tennis","olympic","match","game"],
- health:["health","doctor","ill","sick","exercise","fitness","wellness","diet"],
- weather:["weather","rain","sun","storm","temperature","forecast","climate"],
- social:["friend","social","chat","talk","community","people","relationship"],
- history:["history","past","war","empire","revolution","king","event"],
- geography:["geography","map","country","city","river","mountain","climate"],
- literature:["book","novel","story","read","author","literature","write"],
- philosophy:["philosophy","ethics","morality","moral","question","thought"],
- joke:["joke","funny","lol","haha","knock knock","pun"]
+  smallTalk:["hi","hello","hey","yo","hiya","how are you","how's it going","what's up","sup","thanks","thank you","bye","goodbye","see you"],
+  identity:["who are you","what is this","what can you do","tell me about yourself"],
+  joke:["joke","funny","pun","haha","lol","knock knock","make me laugh"],
+  school:["school","homework","class","teacher","study","lesson","exam","grade","subject"],
+  math:["math","calculate","problem","equation","number","sum","subtract","multiply","divide"],
+  coding:["code","program","script","python","javascript","html","java","project","algorithm","debugging"],
+  game:["game","play","gamer","gaming","console","pc","video game","multiplayer","strategy","rpg","fps"],
+  music:["music","song","band","instrument","melody","piano","guitar","singing","orchestra","genre"],
+  movie:["movie","film","cinema","watch","series","episode","tv show","anime","cartoon"],
+  food:["food","eat","hungry","meal","recipe","drink","snack","cuisine","cooking","restaurant"],
+  travel:["travel","trip","holiday","vacation","tour","flight","journey","destination","city","country"],
+  sport:["sport","soccer","basketball","tennis","olympic","match","football","baseball","volleyball"],
+  health:["health","doctor","ill","sick","exercise","fitness","wellness","diet","medicine","mental health"],
+  weather:["weather","rain","sun","storm","temperature","forecast","climate","snow","thunder"],
+  social:["friend","social","chat","talk","community","people","relationship","family","love"],
+  history:["history","past","war","empire","revolution","king","event","civilization","ancient","medieval"],
+  geography:["geography","map","country","city","river","mountain","climate","continent","ocean","landmark"],
+  literature:["book","novel","story","read","author","literature","write","poetry","essay","fiction","non-fiction"],
+  philosophy:["philosophy","ethics","morality","moral","question","thought","religion","faith","god","belief"],
+  science:["science","physics","chemistry","biology","experiment","research","technology","ai","robotics","space"],
+  art:["art","painting","drawing","sculpture","design","photography","visual","gallery","museum"],
+  economy:["money","finance","stock","economy","business","trade","investment","market","bitcoin","crypto"],
+  politics:["politics","government","law","president","election","policy","constitution","rights","legal"],
+  psychology:["psychology","mind","emotion","behavior","stress","depression","anxiety","therapy","motivation"],
+  misc:["memes","trend","internet","tech news","random fact","curiosity","opinion","advice"]
 };
 
-// Jawaban per topik
+// Array joke panjang
+const jokes=[
+ "Why did the scarecrow win an award? Because he was outstanding in his field!",
+ "Why don't scientists trust atoms? Because they make up everything!",
+ "I told my computer I needed a break, and it said: 'No problem, I'll go to sleep!'",
+ "Why did the math book look sad? Because it had too many problems.",
+ "What do you call fake spaghetti? An impasta!",
+ "Why was the broom late? It swept in.",
+ "Why did the coffee file a police report? It got mugged.",
+ "Why did the chicken join a band? Because it had the drumsticks!",
+ "What do you call cheese that isn't yours? Nacho cheese!",
+ "Why did the cookie go to the hospital? Because it felt crummy!"
+];
+
+// Jawaban panjang per topik
 const topicReplies={
- school:["School topic detected. Can you tell me more about your homework or class?"],
- game:["Gaming topic active. Which game are you currently playing?"],
- tired:["You seem tired. Maybe a short break would help."],
- sad:["I hear you. Do you want to talk about what's making you sad?"],
- math:["Math problem detected. Give me the numbers and operations so we solve it together."],
- music:["Music topic detected. What's your favorite genre or instrument?"],
- movie:["Movie topic detected. Do you prefer films, series, or anime?"],
- food:["Food topic detected. What's your favorite dish or cuisine?"],
- travel:["Travel topic active. Any destinations in mind?"],
- coding:["Coding topic detected. Which language or project?"],
- sport:["Sport topic active. Do you play or watch sports?"],
- health:["Health topic detected. Are you feeling well?"],
- weather:["Weather topic active. How is the forecast today?"],
- social:["Social topic detected. How are your friends or family?"],
- history:["History topic detected. Which period or event interests you?"],
- geography:["Geography topic active. Are you curious about countries, cities, or landmarks?"],
- literature:["Literature topic detected. Favorite book or author?"],
- philosophy:["Philosophy topic detected. Are you interested in ethics, morality, or abstract thoughts?"],
- joke:["Haha! That’s funny. Want to hear a joke too?","I get it! That made me laugh.","Good one!"]
+  smallTalk:[
+    "Hello! I'm Nexus AI. How's your day going? Feel free to chat with me about anything!",
+    "Hi there! I can answer questions, discuss topics, or just have a casual chat with you.",
+    "Hey! I'm here to assist you, provide information, and even tell jokes."
+  ],
+  identity:[
+    "I'm Nexus AI, an advanced AI chatbot designed to answer questions, discuss topics, tell jokes, and chat with users just like ChatGPT.",
+    "Nexus AI at your service! I can provide information, help with learning, discuss ideas, or just have a casual conversation."
+  ],
+  joke:jokes,
+  school:[
+    "School topic detected. You can ask me about homework help, class subjects, studying techniques, or exam preparation.",
+    "I can provide explanations on various subjects, help solve problems, or give tips for better learning habits."
+  ],
+  math:[
+    "Math problem detected. Provide me with the numbers and operations, and I can help you solve them step by step.",
+    "I can explain concepts, perform calculations, or guide you through equations, algebra, or geometry problems."
+  ],
+  coding:[
+    "Coding topic detected. I can help you understand programming concepts, debug code, or give examples in Python, JavaScript, HTML, Java, and more.",
+    "I can explain algorithms, data structures, and help you work on your coding projects effectively."
+  ],
+  game:[
+    "Gaming topic detected. I can discuss different genres, strategies, or provide tips for video games, both PC and console.",
+    "Whether you play RPGs, FPS, strategy, or multiplayer games, I can chat about them and give advice."
+  ],
+  music:[
+    "Music topic detected. I can talk about genres, instruments, famous artists, or explain musical concepts like harmony and rhythm.",
+    "I can also suggest songs or discuss piano, guitar, or orchestral music theory."
+  ],
+  movie:[
+    "Movie topic detected. I can provide information about films, series, anime, or TV shows, discuss plots, characters, and recommendations.",
+    "Ask me about genres, directors, or episodes and I can provide detailed explanations."
+  ],
+  food:[
+    "Food topic detected. I can discuss recipes, cuisines, cooking tips, nutrition, and popular dishes from around the world.",
+    "I can also suggest meals, snacks, or drinks based on your preferences."
+  ],
+  travel:[
+    "Travel topic detected. I can provide information about destinations, travel tips, cultural insights, and sightseeing recommendations.",
+    "Ask me about cities, countries, or planning trips and vacations."
+  ],
+  sport:[
+    "Sports topic detected. I can discuss football, basketball, tennis, Olympics, matches, players, and strategies.",
+    "I can also give explanations of rules, history, and tips for sports enthusiasts."
+  ],
+  health:[
+    "Health topic detected. I can provide general advice about exercise, wellness, diet, and mental health.",
+    "I can explain symptoms, healthy habits, and tips for staying fit. (Note: not a substitute for a doctor.)"
+  ],
+  weather:[
+    "Weather topic detected. I can provide explanations about climate, temperature, rain, storms, and forecasts in general.",
+    "I can also explain meteorological concepts and patterns."
+  ],
+  social:[
+    "Social topic detected. I can discuss relationships, communication, friendships, communities, and social dynamics.",
+    "I can provide advice on interacting with people or understanding social situations."
+  ],
+  history:[
+    "History topic detected. I can provide information about past events, empires, revolutions, famous leaders, and civilizations.",
+    "Ask me about ancient, medieval, or modern history and I can give detailed explanations."
+  ],
+  geography:[
+    "Geography topic detected. I can discuss countries, cities, rivers, mountains, continents, oceans, climate, and landmarks.",
+    "I can also explain geographical concepts and maps."
+  ],
+  literature:[
+    "Literature topic detected. I can discuss books, novels, stories, authors, literary analysis, genres, and writing techniques.",
+    "I can also provide summaries, interpretations, and recommendations."
+  ],
+  philosophy:[
+    "Philosophy topic detected. I can discuss ethics, morality, abstract thoughts, philosophical questions, and religions.",
+    "I can explain concepts, arguments, and notable philosophers."
+  ],
+  science:[
+    "Science topic detected. I can discuss physics, chemistry, biology, experiments, research, technology, AI, robotics, and space.",
+    "Ask me about scientific concepts, discoveries, and theories for detailed explanations."
+  ],
+  art:[
+    "Art topic detected. I can discuss painting, drawing, sculpture, design, photography, museums, galleries, and famous artists.",
+    "I can explain artistic techniques, history, and styles."
+  ],
+  economy:[
+    "Economy topic detected. I can discuss finance, stocks, business, trade, investments, markets, bitcoin, and cryptocurrency.",
+    "I can explain economic concepts, trends, and financial advice in general terms."
+  ],
+  politics:[
+    "Politics topic detected. I can discuss government, law, presidents, elections, policies, constitution, rights, and legal systems.",
+    "I can also explain political theories, historical events, and current issues."
+  ],
+  psychology:[
+    "Psychology topic detected. I can discuss the mind, emotions, behavior, stress, depression, anxiety, therapy, and motivation.",
+    "I can provide explanations, coping strategies, and advice for mental well-being."
+  ],
+  misc:[
+    "Miscellaneous topic detected. I can discuss trends, memes, internet culture, random facts, curiosity, opinions, and advice.",
+    "Feel free to ask me about anything unusual or interesting!"
+  ]
 };
 
-const smallTalk={
- greeting:["Hello! How's it going?","Hi there! What are you up to?","Hey! How can I assist you today?"],
- howAreYou:["I'm fine, thank you! How about you?","Doing well! How's your day going?","All good here. What about you?"],
- whatsUp:["Not much, just chatting with you! How about you?","Just here to help. What's up with you?","Just running the AI engine. How's it going?"],
- thanks:["You're welcome!","No problem!","Anytime!","Glad I could help!"],
- bye:["Goodbye! Talk to you later.","See you soon!","Take care!","Bye!"]
+// Small talk pre-defined
+const smallTalkReplies={
+  greeting:["Hello! How's it going?","Hi there! What are you up to?","Hey! I'm here to chat!"],
+  howAreYou:["I'm fine, thank you! How about you?","Doing well! How's your day?","All good here. And you?"],
+  whatsUp:["Not much, just chatting with you!","Just here to help. What's up?","Running my AI engine. How's it going?"],
+  thanks:["You're welcome!","No problem!","Anytime!","Glad I could help!"],
+  bye:["Goodbye! Talk to you later.","See you soon!","Take care!","Bye!"]
 };
 
+// Deteksi topik input
 function detectTopics(input){
- input=input.toLowerCase();
- let detected=[];
- for(let topic in topics){
-   for(let kw of topics[topic]){
-     if(input.includes(kw) && !detected.includes(topic)) detected.push(topic);
-   }
- }
- if(detected.length===0 && lastTopics.length>0) detected=lastTopics;
- lastTopics=detected;
- return detected;
+  input=input.toLowerCase();
+  let detected=[];
+  for(let topic in topics){
+    for(let kw of topics[topic]){
+      if(input.includes(kw) && !detected.includes(topic)) detected.push(topic);
+    }
+  }
+  if(detected.length===0 && lastTopics.length>0) detected=lastTopics;
+  lastTopics=detected;
+  return detected;
 }
 
+// Fungsi utama Nexus AI
 function nexusAI(input){
- memory.push(input);
- if(memory.length>50) memory.shift();
- const text=input.trim().toLowerCase();
+  memory.push(input);
+  if(memory.length>50) memory.shift();
+  const text=input.trim().toLowerCase();
 
- // Small talk
- if(["hi","hello","hey","yo","hiya"].includes(text)) return smallTalk.greeting[Math.floor(Math.random()*smallTalk.greeting.length)];
- if(text.includes("how are you")||text.includes("how's it going")) return smallTalk.howAreYou[Math.floor(Math.random()*smallTalk.howAreYou.length)];
- if(text.includes("what's up")||text.includes("sup")) return smallTalk.whatsUp[Math.floor(Math.random()*smallTalk.whatsUp.length)];
- if(text.includes("thank")||text.includes("thanks")) return smallTalk.thanks[Math.floor(Math.random()*smallTalk.thanks.length)];
- if(text.includes("bye")||text.includes("goodbye")||text.includes("see you")) return smallTalk.bye[Math.floor(Math.random()*smallTalk.bye.length)];
- if(text.includes("who are you")||text.includes("what is this")) return "I'm Nexus AI, designed to chat and help you.";
+  // Small talk
+  if(["hi","hello","hey","yo","hiya"].includes(text)) return smallTalkReplies.greeting[Math.floor(Math.random()*smallTalkReplies.greeting.length)];
+  if(text.includes("how are you")||text.includes("how's it going")) return smallTalkReplies.howAreYou[Math.floor(Math.random()*smallTalkReplies.howAreYou.length)];
+  if(text.includes("what's up")||text.includes("sup")) return smallTalkReplies.whatsUp[Math.floor(Math.random()*smallTalkReplies.whatsUp.length)];
+  if(text.includes("thank")||text.includes("thanks")) return smallTalkReplies.thanks[Math.floor(Math.random()*smallTalkReplies.thanks.length)];
+  if(text.includes("bye")||text.includes("goodbye")||text.includes("see you")) return smallTalkReplies.bye[Math.floor(Math.random()*smallTalkReplies.bye.length)];
+  if(text.includes("who are you")||text.includes("what is this")) return "I'm Nexus AI, an advanced AI chatbot designed to chat, answer questions, and tell jokes.";
 
- // Topik
- const detected=detectTopics(text);
- if(detected.length>0){
-   let responses=[];
-   for(let t of detected){
-     if(topicReplies[t]) responses.push(topicReplies[t][Math.floor(Math.random()*topicReplies[t].length)]);
-   }
-   return responses.length>0 ? responses.join(" ") : "I don't understand";
- }
+  // Topik
+  const detected=detectTopics(text);
+  if(detected.length>0){
+    let responses=[];
+    for(let t of detected){
+      if(topicReplies[t]){
+        if(t==="joke"){
+          // 50% chance tertawa / kasih joke, 50% I don't laugh
+          if(Math.random()<0.5) responses.push(topicReplies[t][Math.floor(Math.random()*topicReplies[t].length)]);
+          else responses.push("I don't laugh");
+        } else {
+          responses.push(topicReplies[t][Math.floor(Math.random()*topicReplies[t].length)]);
+        }
+      }
+    }
+    return responses.length>0 ? responses.join(" ") : "I don't understand";
+  }
 
-return "I don't understand";
+  return "I don't understand";
 }
 
+// Fungsi kirim pesan
 function send(){
- const container=document.getElementById("chatContainer");
- const inputEl=document.getElementById("userInput");
- const text=inputEl.value.trim();
- if(!text) return;
+  const container=document.getElementById("chatContainer");
+  const inputEl=document.getElementById("userInput");
+  const text=inputEl.value.trim();
+  if(!text) return;
 
- const userDiv=document.createElement("div");
- userDiv.className="bubble userBubble";
- userDiv.textContent=text;
- container.appendChild(userDiv);
+  const userDiv=document.createElement("div");
+  userDiv.className="bubble userBubble";
+  userDiv.textContent=text;
+  container.appendChild(userDiv);
 
- const reply=nexusAI(text);
- const nexusDiv=document.createElement("div");
- nexusDiv.className="bubble nexusBubble";
- nexusDiv.textContent=reply;
- container.appendChild(nexusDiv);
+  const reply=nexusAI(text);
+  const nexusDiv=document.createElement("div");
+  nexusDiv.className="bubble nexusBubble";
+  nexusDiv.textContent=reply;
+  container.appendChild(nexusDiv);
 
- container.scrollTop=container.scrollHeight;
- inputEl.value="";
+  container.scrollTop=container.scrollHeight;
+  inputEl.value="";
 }
 </script>
 
