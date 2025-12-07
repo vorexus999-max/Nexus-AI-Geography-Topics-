@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Nexus AI Ultimate</title>
+<title>Nexus AI - Ultimate 100 Countries</title>
 <style>
 body { margin:0; font-family:Arial,sans-serif; display:flex; flex-direction:column; height:100vh; background:#f5f5f5; }
 #header { background:#1f2937; color:#fff; padding:15px; text-align:center; font-size:22px; font-weight:bold; }
@@ -15,218 +15,68 @@ body { margin:0; font-family:Arial,sans-serif; display:flex; flex-direction:colu
 #userInput { flex:1; padding:10px; font-size:16px; border-radius:8px; border:1px solid #aaa; outline:none; }
 #sendBtn { margin-left:10px; padding:10px 15px; font-size:16px; border-radius:8px; border:none; background:#007bff; color:#fff; cursor:pointer; }
 #sendBtn:hover { background:#0056b3; }
+img.flag { width:40px; vertical-align:middle; margin-right:5px; }
 </style>
 </head>
 <body>
 
-<div id="header">Nexus AI</div>
+<div id="header">Nexus AI - Ultimate 100 Countries</div>
 <div id="chatContainer"></div>
 <div id="inputBar">
-<input id="userInput" type="text" placeholder="Type a message..." onkeydown="if(event.key==='Enter') send()">
+<input id="userInput" type="text" placeholder="Ask about countries, capitals, leaders, GDP, landmarks..." onkeydown="if(event.key==='Enter') send()">
 <button id="sendBtn" onclick="send()">Send</button>
 </div>
 
 <script>
-// Memory percakapan
 let memory = [];
-let lastTopics = [];
-
-// Joke database
-const jokes = [
- "Why did the scarecrow win an award? Because he was outstanding in his field!",
- "Why don't scientists trust atoms? Because they make up everything!",
- "I told my computer I needed a break, and it said: 'No problem, I'll go to sleep!'",
- "Why did the math book look sad? Because it had too many problems.",
- "What do you call fake spaghetti? An impasta!",
- "Why was the broom late? It swept in.",
- "Why did the coffee file a police report? It got mugged!",
- "Why did the chicken join a band? Because it had the drumsticks!",
- "What do you call cheese that isn't yours? Nacho cheese!",
- "Why did the cookie go to the hospital? Because it felt crummy!"
+let countriesDB = {};
+let smallTalkReplies = [
+  "Hello! How's your day going?",
+  "Hi! What are you up to today?",
+  "Hey there! I'm here to chat about geography or anything else you like.",
+  "Hello! Curious about any place in the world today?"
 ];
 
-// Topic replies with intent-aware responses
-const topicReplies = {
-  smallTalk: [
-    "Hello! How's your day?",
-    "Hi! What are you up to today?",
-    "Hey! I'm here to chat."
-  ],
-  identity: [
-    "I'm Nexus AI, an advanced AI chatbot. I can chat, answer questions, tell jokes, and remember context."
-  ],
-  joke: jokes,
-  travel: [
-    "Some top Asian countries to visit: Japan, Thailand, Singapore, Indonesia, and South Korea. Do you want more details on one of them?"
-  ],
-  geography: [
-    "Countries have capitals, landmarks, borders, and population info. For example, Japan's capital is Tokyo."
-  ],
-  history: [
-    "I can explain historical events, revolutions, and famous leaders."
-  ],
-  math: [
-    "I can help solve equations, explain concepts, or guide you step by step."
-  ],
-  coding: [
-    "I can explain algorithms, debug scripts, provide code samples, or teach programming concepts."
-  ],
-  game: [
-    "I can discuss game genres, strategies, and tips for popular games."
-  ],
-  music: [
-    "I can suggest songs, explain music theory, or discuss artists and instruments."
-  ],
-  movie: [
-    "I can provide info about movies, series, anime, characters, and plots."
-  ],
-  food: [
-    "I can discuss recipes, cuisines, nutrition, or cooking tips."
-  ],
-  sport: [
-    "I can provide info on matches, players, rules, and strategies."
-  ],
-  health: [
-    "I can provide guidance about exercise, wellness, mental health, and general medical info."
-  ],
-  weather: [
-    "I can explain weather forecasts, patterns, and climate for different regions."
-  ],
-  social: [
-    "I can discuss relationships, communication, and social dynamics."
-  ],
-  literature: [
-    "I can discuss books, authors, literary analysis, genres, and writing techniques."
-  ],
-  philosophy: [
-    "I can discuss ethics, morality, beliefs, religion, and philosophical questions."
-  ],
-  science: [
-    "I can explain physics, chemistry, biology, experiments, research, and technology."
-  ],
-  art: [
-    "I can discuss painting, drawing, sculpture, photography, museums, galleries, and famous artists."
-  ],
-  economy: [
-    "I can discuss finance, business, markets, trade, investments, and crypto."
-  ],
-  politics: [
-    "I can discuss government, policies, elections, laws, and political events."
-  ],
-  psychology: [
-    "I can discuss behavior, emotions, stress, therapy, and motivation."
-  ],
-  misc: [
-    "I can chat about random topics, memes, trends, and general knowledge."
-  ]
-};
+// Load countries JSON
+fetch('countries.json')
+  .then(res => res.json())
+  .then(data => { countriesDB = data; })
+  .catch(err => console.error("Failed to load countries.json", err));
 
-// Intent-based topic detection
 function detectIntent(text){
-    text=text.toLowerCase();
-    let detected=[];
-
-    // Joke
-    if(/tell me a joke|give me a joke|make me laugh|funny|pun|knock knock/.test(text)) detected.push("joke");
-
-    // Travel / Geography (intent-aware)
-    if(/country in asia|asian countries|countries in asia|top destination in asia|places to visit asia/.test(text)) detected.push("travel");
-    if(/capital of|located in|borders with|coordinates|where is|country information/.test(text)) detected.push("geography");
-
-    // History
-    if(/when was|historical event|ancient|revolution|king|empire/.test(text)) detected.push("history");
-
-    // Math
-    if(/solve|calculate|equation|sum|subtract|multiply|divide/.test(text)) detected.push("math");
-
-    // Coding
-    if(/how to code|write a script|algorithm|python|javascript|html/.test(text)) detected.push("coding");
-
-    // Game
-    if(/game|gaming|play|console|rpg|fps/.test(text)) detected.push("game");
-
-    // Music
-    if(/music|song|band|piano|guitar|melody/.test(text)) detected.push("music");
-
-    // Movie
-    if(/movie|film|cinema|series|anime/.test(text)) detected.push("movie");
-
-    // Food
-    if(/food|eat|hungry|meal|recipe|cooking/.test(text)) detected.push("food");
-
-    // Sport
-    if(/sport|soccer|basketball|tennis|football/.test(text)) detected.push("sport");
-
-    // Health
-    if(/health|exercise|fitness|diet|mental health|doctor|sick/.test(text)) detected.push("health");
-
-    // Weather
-    if(/weather|rain|sun|storm|temperature|forecast|climate|snow/.test(text)) detected.push("weather");
-
-    // Social
-    if(/friend|social|chat|relationship|family|love/.test(text)) detected.push("social");
-
-    // Literature
-    if(/book|novel|story|author|literature|write|poetry/.test(text)) detected.push("literature");
-
-    // Philosophy
-    if(/philosophy|ethics|morality|religion|belief|god/.test(text)) detected.push("philosophy");
-
-    // Science
-    if(/science|physics|chemistry|biology|experiment|technology|ai|robotics|space/.test(text)) detected.push("science");
-
-    // Art
-    if(/art|painting|drawing|sculpture|photography|gallery|museum/.test(text)) detected.push("art");
-
-    // Economy
-    if(/money|finance|stock|economy|business|trade|investment|market|crypto/.test(text)) detected.push("economy");
-
-    // Politics
-    if(/politics|government|law|president|election|policy|constitution|rights/.test(text)) detected.push("politics");
-
-    // Psychology
-    if(/psychology|mind|emotion|behavior|stress|depression|therapy/.test(text)) detected.push("psychology");
-
-    // Small talk (processed last)
-    if(detected.length===0){
-        if(/hi|hello|hey|yo|hiya/.test(text)) detected.push("smallTalk");
-        if(/how are you|how's it going/.test(text)) detected.push("smallTalk");
-        if(/what's up|sup/.test(text)) detected.push("smallTalk");
-        if(/thank|thanks/.test(text)) detected.push("smallTalk");
-        if(/bye|goodbye|see you/.test(text)) detected.push("smallTalk");
-        if(/who are you|what is this|what can you do/.test(text)) detected.push("identity");
-    }
-
-    lastTopics=detected;
-    return detected.length>0 ? detected : ["misc"];
+  text = text.toLowerCase();
+  if(/country|countries|capital|city|landmark|mountain|river|continent|president|leader|gdp|population|currency|area|timezone|flag|climate|independence/.test(text)){
+    return "geography";
+  }
+  if(/hi|hello|hey|yo|hiya/.test(text) || /how are you|what's up|thanks|bye/.test(text)){
+    return "smallTalk";
+  }
+  return "unknown";
 }
 
-// Nexus AI response
 function nexusAI(text){
-    memory.push({user:text, topics:lastTopics});
-    if(memory.length>50) memory.shift();
-    text=text.trim().toLowerCase();
+  memory.push({user:text});
+  if(memory.length>100) memory.shift();
+  text = text.trim().toLowerCase();
+  const intent = detectIntent(text);
 
-    const detected=detectIntent(text);
-    let responses=[];
-    for(let t of detected){
-        if(topicReplies[t]){
-            if(t==="joke"){
-                if(/give me a joke|tell me a joke|make me laugh/.test(text)){
-                    responses.push(topicReplies[t][Math.floor(Math.random()*topicReplies[t].length)]);
-                } else {
-                    if(Math.random()<0.5) responses.push(topicReplies[t][Math.floor(Math.random()*topicReplies[t].length)]);
-                    else responses.push("I don't laugh");
-                }
-            } else {
-                responses.push(topicReplies[t][Math.floor(Math.random()*topicReplies[t].length)]);
-            }
-        }
+  if(intent==="geography"){
+    for(const country in countriesDB){
+      if(text.includes(country.toLowerCase())){
+        const d = countriesDB[country];
+        return `${country} (${d.continent})\nCapital: ${d.capital}\nLandmark: ${d.landmark}\nLeader: ${d.leader}\nIndependence: ${d.independence}\nGDP per Capita: ${d.gdpPerCapita}\nPopulation: ${d.population}\nLanguage: ${d.language}\nCurrency: ${d.currency}\nArea: ${d.area}\nTimezone: ${d.timezone}\nClimate: ${d.climate}\nMain River: ${d.mainRiver}\nMain Mountain: ${d.mainMountain}\nHistory: ${d.history}\nEconomy: ${d.economy}\nFlag: ${d.flag}`;
+      }
     }
-    return responses.length>0 ? responses.join(" ") : "I don't understand. Could you clarify?";
+    return "I can provide info about countries. Please specify a country name.";
+  }
+
+  if(intent==="smallTalk"){
+    return smallTalkReplies[Math.floor(Math.random()*smallTalkReplies.length)];
+  }
+
+  return "I don't understand. Could you clarify your geography question?";
 }
 
-// Send message
 function send(){
   const container=document.getElementById("chatContainer");
   const inputEl=document.getElementById("userInput");
