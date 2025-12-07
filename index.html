@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Nexus AI Conversational</title>
+<title>Nexus AI Ultimate</title>
 <style>
 body { margin:0; font-family:Arial,sans-serif; display:flex; flex-direction:column; height:100vh; background:#f5f5f5; }
 #header { background:#1f2937; color:#fff; padding:15px; text-align:center; font-size:22px; font-weight:bold; }
@@ -30,7 +30,6 @@ body { margin:0; font-family:Arial,sans-serif; display:flex; flex-direction:colu
 // Memory percakapan
 let memory = [];
 let lastTopics = [];
-let lastUserInput = "";
 
 // Joke database
 const jokes = [
@@ -40,63 +39,61 @@ const jokes = [
  "Why did the math book look sad? Because it had too many problems.",
  "What do you call fake spaghetti? An impasta!",
  "Why was the broom late? It swept in.",
- "Why did the coffee file a police report? It got mugged.",
+ "Why did the coffee file a police report? It got mugged!",
  "Why did the chicken join a band? Because it had the drumsticks!",
  "What do you call cheese that isn't yours? Nacho cheese!",
  "Why did the cookie go to the hospital? Because it felt crummy!"
 ];
 
-// Topik dan jawaban
+// Topic replies with intent-aware responses
 const topicReplies = {
   smallTalk: [
-    "Hello! I'm Nexus AI. How's your day going?",
-    "Hi there! What are you up to today?",
-    "Hey! I'm here to chat and help you with anything."
+    "Hello! How's your day?",
+    "Hi! What are you up to today?",
+    "Hey! I'm here to chat."
   ],
   identity: [
-    "I'm Nexus AI, an advanced AI chatbot. I can chat, answer questions, tell jokes, and remember context.",
-    "Nexus AI at your service! I can discuss topics, help you learn, or just have casual conversation."
+    "I'm Nexus AI, an advanced AI chatbot. I can chat, answer questions, tell jokes, and remember context."
   ],
   joke: jokes,
   travel: [
-    "I can recommend amazing destinations or hidden gems. Where are you planning to go?",
-    "If you want to know the best places to visit, I can provide detailed travel info."
+    "Some top Asian countries to visit: Japan, Thailand, Singapore, Indonesia, and South Korea. Do you want more details on one of them?"
   ],
   geography: [
-    "I can provide information about countries, capitals, locations, landmarks, rivers, and mountains."
+    "Countries have capitals, landmarks, borders, and population info. For example, Japan's capital is Tokyo."
   ],
   history: [
-    "I can give detailed info about historical events, revolutions, empires, and famous leaders."
+    "I can explain historical events, revolutions, and famous leaders."
   ],
   math: [
-    "I can explain concepts, solve problems, or guide you through equations step by step."
+    "I can help solve equations, explain concepts, or guide you step by step."
   ],
   coding: [
-    "I can explain algorithms, provide code samples, debug scripts, or help you with programming concepts."
+    "I can explain algorithms, debug scripts, provide code samples, or teach programming concepts."
   ],
   game: [
-    "I can discuss game genres, strategies, or provide tips for popular PC and console games."
+    "I can discuss game genres, strategies, and tips for popular games."
   ],
   music: [
-    "I can discuss music theory, instruments, artists, or suggest songs based on your taste."
+    "I can suggest songs, explain music theory, or discuss artists and instruments."
   ],
   movie: [
-    "I can provide information about movies, series, anime, characters, and plot discussions."
+    "I can provide info about movies, series, anime, characters, and plots."
   ],
   food: [
-    "I can discuss recipes, cuisines, nutrition, or give tips for cooking meals."
+    "I can discuss recipes, cuisines, nutrition, or cooking tips."
   ],
   sport: [
-    "I can discuss matches, players, rules, and strategies for various sports."
+    "I can provide info on matches, players, rules, and strategies."
   ],
   health: [
     "I can provide guidance about exercise, wellness, mental health, and general medical info."
   ],
   weather: [
-    "I can explain weather patterns, forecasts, and climate info for different regions."
+    "I can explain weather forecasts, patterns, and climate for different regions."
   ],
   social: [
-    "I can discuss relationships, communication, communities, or give advice on social dynamics."
+    "I can discuss relationships, communication, and social dynamics."
   ],
   literature: [
     "I can discuss books, authors, literary analysis, genres, and writing techniques."
@@ -111,7 +108,7 @@ const topicReplies = {
     "I can discuss painting, drawing, sculpture, photography, museums, galleries, and famous artists."
   ],
   economy: [
-    "I can discuss finance, stocks, business, markets, trade, investments, and crypto."
+    "I can discuss finance, business, markets, trade, investments, and crypto."
   ],
   politics: [
     "I can discuss government, policies, elections, laws, and political events."
@@ -124,35 +121,16 @@ const topicReplies = {
   ]
 };
 
-// Small talk predefined
-const smallTalkReplies = {
-  greeting:["Hello! How's it going?","Hi there! What are you up to?","Hey! I'm here to chat!"],
-  howAreYou:["I'm fine, thank you! How about you?","Doing well! How's your day?","All good here. And you?"],
-  whatsUp:["Not much, just chatting with you!","Just here to help. What's up?","Running my AI engine. How's it going?"],
-  thanks:["You're welcome!","No problem!","Anytime!","Glad I could help!"],
-  bye:["Goodbye! Talk to you later.","See you soon!","Take care!","Bye!"]
-};
-
-// Context-aware topic detection
-function detectTopics(text){
+// Intent-based topic detection
+function detectIntent(text){
     text=text.toLowerCase();
     let detected=[];
-
-    // Small talk & identity
-    if(/hi|hello|hey|yo|hiya/.test(text)) detected.push("smallTalk");
-    if(/how are you|how's it going/.test(text)) detected.push("smallTalk");
-    if(/what's up|sup/.test(text)) detected.push("smallTalk");
-    if(/thank|thanks/.test(text)) detected.push("smallTalk");
-    if(/bye|goodbye|see you/.test(text)) detected.push("smallTalk");
-    if(/who are you|what is this|what can you do/.test(text)) detected.push("identity");
 
     // Joke
     if(/tell me a joke|give me a joke|make me laugh|funny|pun|knock knock/.test(text)) detected.push("joke");
 
-    // Travel
-    if(/best country|favorite city|top destination|places to visit/.test(text)) detected.push("travel");
-
-    // Geography
+    // Travel / Geography (intent-aware)
+    if(/country in asia|asian countries|countries in asia|top destination in asia|places to visit asia/.test(text)) detected.push("travel");
     if(/capital of|located in|borders with|coordinates|where is|country information/.test(text)) detected.push("geography");
 
     // History
@@ -209,7 +187,16 @@ function detectTopics(text){
     // Psychology
     if(/psychology|mind|emotion|behavior|stress|depression|therapy/.test(text)) detected.push("psychology");
 
-    if(detected.length===0 && lastTopics.length>0) detected=lastTopics;
+    // Small talk (processed last)
+    if(detected.length===0){
+        if(/hi|hello|hey|yo|hiya/.test(text)) detected.push("smallTalk");
+        if(/how are you|how's it going/.test(text)) detected.push("smallTalk");
+        if(/what's up|sup/.test(text)) detected.push("smallTalk");
+        if(/thank|thanks/.test(text)) detected.push("smallTalk");
+        if(/bye|goodbye|see you/.test(text)) detected.push("smallTalk");
+        if(/who are you|what is this|what can you do/.test(text)) detected.push("identity");
+    }
+
     lastTopics=detected;
     return detected.length>0 ? detected : ["misc"];
 }
@@ -220,15 +207,7 @@ function nexusAI(text){
     if(memory.length>50) memory.shift();
     text=text.trim().toLowerCase();
 
-    // Small talk
-    if(["hi","hello","hey","yo","hiya"].includes(text)) return smallTalkReplies.greeting[Math.floor(Math.random()*smallTalkReplies.greeting.length)];
-    if(text.includes("how are you")||text.includes("how's it going")) return smallTalkReplies.howAreYou[Math.floor(Math.random()*smallTalkReplies.howAreYou.length)];
-    if(text.includes("what's up")||text.includes("sup")) return smallTalkReplies.whatsUp[Math.floor(Math.random()*smallTalkReplies.whatsUp.length)];
-    if(text.includes("thank")||text.includes("thanks")) return smallTalkReplies.thanks[Math.floor(Math.random()*smallTalkReplies.thanks.length)];
-    if(text.includes("bye")||text.includes("goodbye")||text.includes("see you")) return smallTalkReplies.bye[Math.floor(Math.random()*smallTalkReplies.bye.length)];
-    if(text.includes("who are you")||text.includes("what is this")) return "I'm Nexus AI, an advanced AI chatbot designed to chat, answer questions, tell jokes, and remember conversation context.";
-
-    const detected=detectTopics(text);
+    const detected=detectIntent(text);
     let responses=[];
     for(let t of detected){
         if(topicReplies[t]){
