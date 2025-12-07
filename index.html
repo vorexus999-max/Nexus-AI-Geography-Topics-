@@ -4,41 +4,10 @@
 <meta charset="UTF-8">
 <title>Nexus AI - Geography</title>
 <style>
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background: #0b0c10;
-    color: #c5c6c7;
-}
-
-#terminal {
-    padding: 20px;
-    height: 90vh;
-    overflow-y: auto;
-    white-space: pre-wrap;
-    background: #1f2833;
-}
-
-#inputBar {
-    width: 100%;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    background: #0b0c10;
-    padding: 10px;
-    border-top: 1px solid #45a29e;
-}
-
-#inputBar input {
-    width: 95%;
-    background: #0b0c10;
-    border: none;
-    outline: none;
-    color: #66fcf1;
-    font-size: 16px;
-    font-family: monospace;
-}
+body { font-family: Arial, sans-serif; margin:0; padding:0; background:#0b0c10; color:#c5c6c7; }
+#terminal { padding:20px; height:90vh; overflow-y:auto; white-space:pre-wrap; background:#1f2833; }
+#inputBar { width:100%; position:fixed; bottom:0; left:0; background:#0b0c10; padding:10px; border-top:1px solid #45a29e; }
+#inputBar input { width:95%; background:#0b0c10; border:none; outline:none; color:#66fcf1; font-size:16px; font-family:monospace; }
 .user { color:#66fcf1; }
 .nexus { color:#45a29e; }
 </style>
@@ -48,7 +17,7 @@ body {
 <div id="terminal">
 NEXUS AI - GEOGRAPHY ONLINE  
 ----------------------------------  
-Type your question about countries, capitals, leaders, GDP, population, etc.
+Ask about countries, capitals, leaders, GDP, population, area, language, currency, independence.
 </div>
 
 <div id="inputBar">
@@ -56,33 +25,22 @@ Type your question about countries, capitals, leaders, GDP, population, etc.
 </div>
 
 <script>
-// Load countries.json (for demo, we assume countries data is embedded)
-let countries = {}; // akan diisi dari countries.json atau embed data
-
-// Contoh minimal data, nanti bisa diganti dengan 100 negara lengkap
-countries["China"] = {
-    "capital": "Beijing",
-    "leader": "Xi Jinping",
-    "independence": "1 October 1949",
-    "gdpPerCapita": "$12,556",
-    "population": "1.4 billion",
-    "area": "9,596,961 km²",
-    "language": "Mandarin",
-    "currency": "Renminbi"
+// Embed countries data (contoh 10 negara pertama)
+let countries = {
+  "USA": {"capital":"Washington, D.C.","leader":"Joe Biden","independence":"4 July 1776","gdpPerCapita":"$76,000","population":"331 million","area":"9,833,520 km²","language":"English","currency":"USD"},
+  "China": {"capital":"Beijing","leader":"Xi Jinping","independence":"1 October 1949","gdpPerCapita":"$12,556","population":"1.4 billion","area":"9,596,961 km²","language":"Mandarin","currency":"Renminbi"},
+  "France": {"capital":"Paris","leader":"Emmanuel Macron","independence":"14 July 1789","gdpPerCapita":"$41,463","population":"67 million","area":"643,801 km²","language":"French","currency":"Euro"},
+  "Germany": {"capital":"Berlin","leader":"Frank-Walter Steinmeier","independence":"3 October 1990","gdpPerCapita":"$55,306","population":"83 million","area":"357,022 km²","language":"German","currency":"Euro"},
+  "Japan": {"capital":"Tokyo","leader":"Fumio Kishida","independence":"11 February 660 BC (traditional)","gdpPerCapita":"$40,847","population":"125 million","area":"377,975 km²","language":"Japanese","currency":"Yen"},
+  "UK": {"capital":"London","leader":"Rishi Sunak","independence":"1707 (United Kingdom formation)","gdpPerCapita":"$46,828","population":"68 million","area":"243,610 km²","language":"English","currency":"Pound Sterling"},
+  "Canada": {"capital":"Ottawa","leader":"Justin Trudeau","independence":"1 July 1867","gdpPerCapita":"$52,144","population":"38 million","area":"9,833,520 km²","language":"English, French","currency":"CAD"},
+  "India": {"capital":"New Delhi","leader":"Narendra Modi","independence":"15 August 1947","gdpPerCapita":"$2,277","population":"1.4 billion","area":"3,287,263 km²","language":"Hindi, English","currency":"Rupee"},
+  "Brazil": {"capital":"Brasília","leader":"Luiz Inácio Lula da Silva","independence":"7 September 1822","gdpPerCapita":"$6,797","population":"213 million","area":"8,515,767 km²","language":"Portuguese","currency":"BRL"},
+  "Russia": {"capital":"Moscow","leader":"Vladimir Putin","independence":"25 December 1991 (post-Soviet)","gdpPerCapita":"$10,230","population":"144 million","area":"17,098,246 km²","language":"Russian","currency":"Ruble"}
+  // ... tambahkan 90 negara lagi
 };
 
-countries["USA"] = {
-    "capital": "Washington, D.C.",
-    "leader": "Joe Biden",
-    "independence": "4 July 1776",
-    "gdpPerCapita": "$76,000",
-    "population": "331 million",
-    "area": "9,833,520 km²",
-    "language": "English",
-    "currency": "USD"
-};
-
-// Small talk responses
+// Small talk
 const smallTalk = [
     "Hello! How's your day going?",
     "I'm here and ready to answer geography questions.",
@@ -90,42 +48,45 @@ const smallTalk = [
     "Greetings! Curious about some country stats?"
 ];
 
+// Parser fleksibel
 function parseQuestion(input) {
-    input = input.toLowerCase();
-    // detect country
+    input = input.toLowerCase().replace(/[?.!]/g,''); // hapus tanda baca
     let country = null;
     for (let c in countries) {
-        if (input.includes(c.toLowerCase())) {
-            country = c;
-            break;
-        }
+        if (input.includes(c.toLowerCase())) { country = c; break; }
     }
-
-    // detect intent
     if (!country) return "I don't understand";
-    
-    if (input.includes("when") && input.includes("independence")) {
+
+    // independence
+    if ((input.includes("when") || input.includes("date") || input.includes("independent")) && input.includes("independence")) {
         return `${country} became independent on ${countries[country].independence}.`;
     }
-    if (input.includes("capital")) {
+    // capital
+    if (input.includes("capital") || input.includes("city")) {
         return `${country}'s capital is ${countries[country].capital}.`;
     }
-    if (input.includes("leader") || input.includes("president") || input.includes("prime minister")) {
+    // leader
+    if (input.includes("leader") || input.includes("president") || input.includes("prime minister") || input.includes("king") || input.includes("queen")) {
         return `The leader of ${country} is ${countries[country].leader}.`;
     }
-    if (input.includes("gdp")) {
+    // GDP
+    if (input.includes("gdp") || input.includes("economy")) {
         return `${country}'s GDP per capita is ${countries[country].gdpPerCapita}.`;
     }
-    if (input.includes("population")) {
+    // population
+    if (input.includes("population") || input.includes("people")) {
         return `${country}'s population is ${countries[country].population}.`;
     }
-    if (input.includes("area")) {
+    // area
+    if (input.includes("area") || input.includes("size") || input.includes("land")) {
         return `${country}'s area is ${countries[country].area}.`;
     }
-    if (input.includes("language")) {
+    // language
+    if (input.includes("language") || input.includes("speak")) {
         return `The main language of ${country} is ${countries[country].language}.`;
     }
-    if (input.includes("currency")) {
+    // currency
+    if (input.includes("currency") || input.includes("money")) {
         return `${country}'s currency is ${countries[country].currency}.`;
     }
 
@@ -133,6 +94,7 @@ function parseQuestion(input) {
     return smallTalk[Math.floor(Math.random() * smallTalk.length)];
 }
 
+// Send function
 function send() {
     const box = document.getElementById("terminal");
     const input = document.getElementById("userInput");
