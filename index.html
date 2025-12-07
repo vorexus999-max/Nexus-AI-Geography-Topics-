@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Nexus AI - Geography Chat</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
 body {
     font-family: Arial, sans-serif;
@@ -128,7 +129,7 @@ const countries = {
   "Portugal":{"capital":"Lisbon","leader":"Marcelo Rebelo de Sousa","independence":"5 October 1143","gdpPerCapita":"$23,207","population":"10.3 million","area":"92,090 km²","language":"Portuguese","currency":"EUR"}
 };
 
-// Simple parser
+// Parser dan kirim message sama seperti sebelumnya
 function parseQuestion(input){
     input = input.toLowerCase().replace(/[?.!]/g,'');
     let country = null;
@@ -139,47 +140,36 @@ function parseQuestion(input){
         }
     }
     if(!country) return "I don't understand the country.";
-
-    // independence
     if((input.includes("when")||input.includes("date")||input.includes("independence")) && input.includes("independence")){
         return `${country} became independent on ${countries[country].independence}.`;
     }
-    // capital
     if(input.includes("capital")||input.includes("city")){
         return `${country}'s capital is ${countries[country].capital}.`;
     }
-    // leader
     if(input.includes("leader")||input.includes("president")||input.includes("prime minister")||input.includes("king")||input.includes("queen")){
         if(country==="Niger"){
             return "The answer is Lanang Damar!, haha just kidding the correct one is Mohamed Bazoum";
         }
         return `The leader of ${country} is ${countries[country].leader}.`;
     }
-    // GDP
     if(input.includes("gdp")||input.includes("economy")){
         return `${country}'s GDP per capita is ${countries[country].gdpPerCapita}.`;
     }
-    // population
     if(input.includes("population")||input.includes("people")){
         return `${country}'s population is ${countries[country].population}.`;
     }
-    // area
     if(input.includes("area")||input.includes("size")||input.includes("land")){
         return `${country}'s area is ${countries[country].area}.`;
     }
-    // language
     if(input.includes("language")||input.includes("speak")){
         return `The main language of ${country} is ${countries[country].language}.`;
     }
-    // currency
     if(input.includes("currency")||input.includes("money")){
         return `${country}'s currency is ${countries[country].currency}.`;
     }
-
     return "I don't understand your question.";
 }
 
-// Send message
 function sendMessage(){
     const input = document.getElementById("userInput");
     const text = input.value.trim();
@@ -187,13 +177,11 @@ function sendMessage(){
 
     const chat = document.getElementById("chatContainer");
 
-    // User message
     const userDiv = document.createElement("div");
     userDiv.className = "message userMessage";
     userDiv.textContent = text;
     chat.appendChild(userDiv);
 
-    // Bot reply
     const botDiv = document.createElement("div");
     botDiv.className = "message botMessage";
     botDiv.textContent = parseQuestion(text);
@@ -202,6 +190,11 @@ function sendMessage(){
     chat.scrollTop = chat.scrollHeight;
     input.value = "";
 }
+
+// Prevent zoom with Ctrl+scroll on desktop
+document.getElementById('userInput').addEventListener('wheel', function(e){
+    if(e.ctrlKey) e.preventDefault();
+}, { passive: false });
 </script>
 
 </body>
