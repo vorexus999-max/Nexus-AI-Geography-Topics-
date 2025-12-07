@@ -2,147 +2,205 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Nexus v2 Terminal</title>
+<title>Nexus v2 ChatGPT UI</title>
 <style>
     body {
-        background-color: #000;
-        color: #00ff00;
-        font-family: "Courier New", monospace;
         margin: 0;
         padding: 0;
+        font-family: "Arial", sans-serif;
+        background-color: #f5f5f5;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
     }
 
-    #terminal {
-        padding: 20px;
-        height: 90vh;
+    #header {
+        background-color: #444;
+        color: #fff;
+        padding: 15px;
+        text-align: center;
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    #chatContainer {
+        flex: 1;
+        padding: 10px;
         overflow-y: auto;
-        white-space: pre-wrap;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
     }
 
-    .user { color:#00ffaa; }
-    .nexus { color:#00ff00; }
+    .bubble {
+        max-width: 70%;
+        padding: 10px 15px;
+        border-radius: 15px;
+        word-wrap: break-word;
+        line-height: 1.4;
+    }
+
+    .userBubble {
+        background-color: #007bff;
+        color: #fff;
+        align-self: flex-end;
+        border-bottom-right-radius: 0;
+    }
+
+    .nexusBubble {
+        background-color: #e2e2e2;
+        color: #000;
+        align-self: flex-start;
+        border-bottom-left-radius: 0;
+    }
 
     #inputBar {
-        width: 100%;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        background: #000;
+        display: flex;
         padding: 10px;
-        border-top: 1px solid #00ff00;
+        background-color: #ddd;
+        border-top: 1px solid #ccc;
     }
 
-    #inputBar input {
-        width: 95%;
-        background: #000;
-        border: none;
-        outline: none;
-        color: #00ff00;
-        font-family: "Courier New", monospace;
+    #userInput {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #aaa;
+        border-radius: 8px;
         font-size: 16px;
+        outline: none;
+    }
+
+    #sendBtn {
+        margin-left: 10px;
+        padding: 10px 15px;
+        font-size: 16px;
+        border: none;
+        border-radius: 8px;
+        background-color: #007bff;
+        color: #fff;
+        cursor: pointer;
+    }
+
+    #sendBtn:hover {
+        background-color: #0056b3;
     }
 </style>
 </head>
 <body>
 
-<div id="terminal">
-NEXUS v2 SYSTEM ONLINE  
-----------------------------------  
-Type your message.
-</div>
+<div id="header">Nexus v2 ChatGPT UI</div>
+
+<div id="chatContainer"></div>
 
 <div id="inputBar">
-    <input id="userInput" type="text" placeholder=">>" onkeydown="if(event.key==='Enter') send()">
+    <input id="userInput" type="text" placeholder="Type a message..." onkeydown="if(event.key==='Enter') send()">
+    <button id="sendBtn" onclick="send()">Send</button>
 </div>
 
 <script>
-let memory = []; // store last 20 messages
-let topics = {}; // detected topics
+// Memory chat & topik terakhir
+let memory = [];
+let lastTopic = null;
 
-function detectTopics(text) {
-    let t = text.toLowerCase();
-    if (t.includes("school")) topics.school = true;
-    if (t.includes("game")) topics.game = true;
-    if (t.includes("tired") || t.includes("sleepy")) topics.tired = true;
-    if (t.includes("sad") || t.includes("down")) topics.sad = true;
-    if (t.includes("math") || t.includes("calculate")) topics.math = true;
-}
+// Topik & jawaban sama seperti versi semi-smart
+const topics = {
+    school: ["school","homework","class","teacher","study","lesson"],
+    game: ["game","play","gamer","gaming","console","pc","video game"],
+    tired: ["tired","sleepy","exhausted","fatigue","nap","sleep"],
+    sad: ["sad","down","unhappy","depressed","lonely","gloomy"],
+    math: ["math","calculate","problem","equation","number","sum","subtract","multiply","divide"],
+    music: ["music","song","instrument","band","melody","piano","guitar","singing"],
+    movie: ["movie","film","cinema","watch","series","episode","tv show"],
+    food: ["food","eat","hungry","meal","recipe","drink","snack"],
+    travel: ["travel","trip","holiday","vacation","tour","flight","journey"],
+    coding: ["code","program","script","python","javascript","html","java","project"],
+    sport: ["sport","soccer","basketball","tennis","olympic","match","game"],
+    health: ["health","doctor","ill","sick","exercise","fitness","wellness"],
+    weather: ["weather","rain","sun","storm","temperature","forecast","climate"],
+    social: ["friend","social","chat","talk","community","people","relationship"]
+};
 
-function replyWithContext(text) {
-    let t = text.toLowerCase();
+const topicReplies = {
+    school: ["School topic detected. Be specific.","Are you talking about homework or class?","Do you have any school questions?","School noted. Continue."],
+    game: ["Gaming topic active.","What game are you playing?","Are you a PC or console gamer?","Tell me more about your game."],
+    tired: ["You're tired. Rest is logical.","Maybe take a short break.","Sleep is important.","Feeling exhausted? Stay hydrated."],
+    sad: ["Noted. Keep talking.","I hear you. Anything on your mind?","Feeling down? Share if you want.","Sadness detected. Stay strong."],
+    math: ["Math input received. Define the problem.","Are you solving an equation?","Give me the numbers, I can help.","Math topic active. What kind of problem?"],
+    music: ["Music topic detected. What's your favorite genre?","Do you play any instruments?","Listening to music is relaxing.","Tell me a song you like."],
+    movie: ["Movie topic active. What's your favorite film?","Do you prefer series or movies?","Cinema or streaming?","Tell me a movie you watched recently."],
+    food: ["Food topic detected. Are you hungry?","What's your favorite meal?","Do you like cooking?","Any favorite recipes?"],
+    travel: ["Travel topic active. Where do you want to go?","Do you like trips or holidays?","Tell me your dream destination.","Traveling is fun. Do you plan trips often?"],
+    coding: ["Coding topic detected. What language?","Are you programming a project?","Need help with your script?","Coding is fun. What are you building?"],
+    sport: ["Sport topic active. Which sport?","Do you play or watch sports?","Favorite team or player?","Sports keep you healthy."],
+    health: ["Health topic detected. Are you okay?","Exercise is important.","Any health concerns?","Remember to rest and stay hydrated."],
+    weather: ["Weather topic active. What's the forecast?","Do you like sunny or rainy days?","Weather affects mood.","Check local forecast regularly."],
+    social: ["Social topic detected. How are your friends?","Do you like chatting online?","People are important for support.","Share something about your social life."]
+};
 
-    // detect new topics
-    detectTopics(t);
+const fallbackReplies = ["I see.","Go on...","Understood.","Continue.","Hmm...","Interesting.","Tell me more.","Okay.","Noted."];
 
-    // fast replies based on active topics
-    if (topics.school) {
-        if (t.includes("why") || t.includes("what")) 
-            return "School topic detected earlier. Be specific.";
-        if (t.includes("homework"))
-            return "Homework? Tell me the subject.";
-        return "School noted. Continue.";
-    }
-
-    if (topics.game) {
-        if (t.includes("what"))
-            return "Games? What genre?";
-        return "Gaming topic active.";
-    }
-
-    if (topics.tired)
-        return "You're tired. Rest is logical.";
-
-    if (topics.sad)
-        return "Noted. Keep talking.";
-
-    if (topics.math) {
-        if (t.match(/[0-9]+/))
-            return "Math input received. Define the problem.";
-        return "Math topic active.";
-    }
-
-    // general fallback
-    return "Noted. Continue.";
-}
-
-function nexusAI(input) {
-    // save memory
-    memory.push(input);
-    if (memory.length > 20) memory.shift();
-
+function detectSmartTopic(input){
     input = input.toLowerCase();
-
-    // direct quick replies
-    if (input === "hi" || input === "hello")
-        return "Hello.";
-
-    if (input.includes("who are you"))
-        return "I'm Nexus. Short, direct, functional.";
-
-    if (input.includes("bye"))
-        return "Leaving. Okay.";
-
-    // topic-aware reply
-    return replyWithContext(input);
+    for (let topic in topics){
+        for (let kw of topics[topic]){
+            if(input.includes(kw)){
+                lastTopic = topic;
+                return topic;
+            }
+        }
+    }
+    return lastTopic;
 }
 
-function send() {
-    const box = document.getElementById("terminal");
-    const input = document.getElementById("userInput");
-    const text = input.value.trim();
-    if (text === "") return;
+function nexusAI(input){
+    memory.push(input);
+    if(memory.length>50) memory.shift();
+    input = input.trim().toLowerCase();
 
-    // print user message
-    box.innerHTML += `\n\n[user] >> ${text}`;
-    
-    // AI response
+    const greetings = ["hi","hello","hey","yo","sup","hiya"];
+    if(greetings.includes(input)){
+        const greetReplies = ["Hello.","Hi there!","Hey!","Yo!","Greetings!"];
+        return greetReplies[Math.floor(Math.random()*greetReplies.length)];
+    }
+
+    if(input.includes("who are you") || input.includes("what is this")){
+        const selfReplies = ["I'm Nexus. Short, direct, functional.","Nexus v2 AI at your service.","Call me Nexus, your assistant AI.","I'm an AI designed to chat and help."];
+        return selfReplies[Math.floor(Math.random()*selfReplies.length)];
+    }
+
+    if(input.includes("bye") || input.includes("goodbye") || input.includes("see you")){
+        const byeReplies = ["Leaving. Okay.","Goodbye!","See you later!","Bye, take care!"];
+        return byeReplies[Math.floor(Math.random()*byeReplies.length)];
+    }
+
+    const topic = detectSmartTopic(input);
+    if(topic && topicReplies[topic]){
+        const replies = topicReplies[topic];
+        return replies[Math.floor(Math.random()*replies.length)];
+    }
+
+    return fallbackReplies[Math.floor(Math.random()*fallbackReplies.length)];
+}
+
+function send(){
+    const container = document.getElementById("chatContainer");
+    const inputEl = document.getElementById("userInput");
+    const text = inputEl.value.trim();
+    if(!text) return;
+
+    const userDiv = document.createElement("div");
+    userDiv.className="bubble userBubble";
+    userDiv.textContent = text;
+    container.appendChild(userDiv);
+
     const reply = nexusAI(text);
-    box.innerHTML += `\n[nexus] >> ${reply}`;
+    const nexusDiv = document.createElement("div");
+    nexusDiv.className="bubble nexusBubble";
+    nexusDiv.textContent = reply;
+    container.appendChild(nexusDiv);
 
-    // auto scroll
-    box.scrollTop = box.scrollHeight;
-
-    input.value = "";
+    container.scrollTop = container.scrollHeight;
+    inputEl.value="";
 }
 </script>
 
