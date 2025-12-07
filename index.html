@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Nexus v2 Terminal</title>
+<style>
+    body {
+        background-color: #000;
+        color: #00ff00;
+        font-family: "Courier New", monospace;
+        margin: 0;
+        padding: 0;
+    }
+
+    #terminal {
+        padding: 20px;
+        height: 90vh;
+        overflow-y: auto;
+        white-space: pre-wrap;
+    }
+
+    .user { color:#00ffaa; }
+    .nexus { color:#00ff00; }
+
+    #inputBar {
+        width: 100%;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        background: #000;
+        padding: 10px;
+        border-top: 1px solid #00ff00;
+    }
+
+    #inputBar input {
+        width: 95%;
+        background: #000;
+        border: none;
+        outline: none;
+        color: #00ff00;
+        font-family: "Courier New", monospace;
+        font-size: 16px;
+    }
+</style>
+</head>
+<body>
+
+<div id="terminal">
+NEXUS v2 SYSTEM ONLINE  
+----------------------------------  
+Type your message.
+</div>
+
+<div id="inputBar">
+    <input id="userInput" type="text" placeholder=">>" onkeydown="if(event.key==='Enter') send()">
+</div>
+
+<script>
+let memory = []; // store last 20 messages
+let topics = {}; // detected topics
+
+function detectTopics(text) {
+    let t = text.toLowerCase();
+    if (t.includes("school")) topics.school = true;
+    if (t.includes("game")) topics.game = true;
+    if (t.includes("tired") || t.includes("sleepy")) topics.tired = true;
+    if (t.includes("sad") || t.includes("down")) topics.sad = true;
+    if (t.includes("math") || t.includes("calculate")) topics.math = true;
+}
+
+function replyWithContext(text) {
+    let t = text.toLowerCase();
+
+    // detect new topics
+    detectTopics(t);
+
+    // fast replies based on active topics
+    if (topics.school) {
+        if (t.includes("why") || t.includes("what")) 
+            return "School topic detected earlier. Be specific.";
+        if (t.includes("homework"))
+            return "Homework? Tell me the subject.";
+        return "School noted. Continue.";
+    }
+
+    if (topics.game) {
+        if (t.includes("what"))
+            return "Games? What genre?";
+        return "Gaming topic active.";
+    }
+
+    if (topics.tired)
+        return "You're tired. Rest is logical.";
+
+    if (topics.sad)
+        return "Noted. Keep talking.";
+
+    if (topics.math) {
+        if (t.match(/[0-9]+/))
+            return "Math input received. Define the problem.";
+        return "Math topic active.";
+    }
+
+    // general fallback
+    return "Noted. Continue.";
+}
+
+function nexusAI(input) {
+    // save memory
+    memory.push(input);
+    if (memory.length > 20) memory.shift();
+
+    input = input.toLowerCase();
+
+    // direct quick replies
+    if (input === "hi" || input === "hello")
+        return "Hello.";
+
+    if (input.includes("who are you"))
+        return "I'm Nexus. Short, direct, functional.";
+
+    if (input.includes("bye"))
+        return "Leaving. Okay.";
+
+    // topic-aware reply
+    return replyWithContext(input);
+}
+
+function send() {
+    const box = document.getElementById("terminal");
+    const input = document.getElementById("userInput");
+    const text = input.value.trim();
+    if (text === "") return;
+
+    // print user message
+    box.innerHTML += `\n\n[user] >> ${text}`;
+    
+    // AI response
+    const reply = nexusAI(text);
+    box.innerHTML += `\n[nexus] >> ${reply}`;
+
+    // auto scroll
+    box.scrollTop = box.scrollHeight;
+
+    input.value = "";
+}
+</script>
+
+</body>
+</html>
